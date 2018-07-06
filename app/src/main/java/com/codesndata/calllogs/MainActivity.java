@@ -1,32 +1,23 @@
 package com.codesndata.calllogs;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.LoaderManager;
-import android.content.ComponentName;
+import android.app.ProgressDialog;
 import android.content.CursorLoader;
-import android.content.DialogInterface;
-import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.content.Loader;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Color;
-import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.CallLog;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
 import android.text.Html;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,30 +31,47 @@ import static android.provider.CallLog.Calls.DEFAULT_SORT_ORDER;
 public class MainActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = "CallLog";
     private static final int URL_LOADER = 1;
-
     private TextView callLogsTextView;
+    private ProgressDialog pDialog;
+    private Handler updateBarHandler;
+    int counter;
+    StringBuilder sb;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate()");
-
         setContentView(R.layout.activity_call_logs);
 
-        // Load all contacts, and print each contact as log debug info.
-        Button loadButton = findViewById(R.id.btn_call_log);
-        loadButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                callLogsTextView = findViewById(R.id.call_logs);
-                isInternetOn();
-            }
-        });
+        //Show ProgressDialog...
+        pDialog = new ProgressDialog(this);
+        pDialog.setTitle("READING CALL LOGS");
+        pDialog.setMessage("Please be patient...\n\nSynchronizing Call Logs with the server.");
+        pDialog.setIcon(R.drawable.call);
+        pDialog.getProgress();
+        pDialog.setCancelable(true);
+        pDialog.show();
+
+        callLogsTextView = findViewById(R.id.call_logs);
+        //Handle updates in the progress dialog
+        updateBarHandler = new Handler();
+
+        // kick start the task of loading call logs
+        initialize();
+
+                //Since reading all the Call Logs will probably take some time, it's considered
+               // wise to run the task on its own thread
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+
+                    }
+                }).start();
         }
 
 
     private void initialize() {
-        Log.d(TAG, "initialize()");
+        Log.d(TAG, "Permissions check");
 
         if (!hasPhoneContactsPermission(Manifest.permission.READ_CONTACTS)) {
             requestPermission(Manifest.permission.READ_CONTACTS);
@@ -72,9 +80,9 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
                 requestPerm(Manifest.permission.READ_PHONE_STATE);
             } else {
 
-                Log.d(TAG, "initialize() >> initialise loader");
+                Log.d(TAG, "initialize() >> initializing loader...");
                 getLoaderManager().initLoader(URL_LOADER, null, MainActivity.this);
-        }
+            }
     }
 
     @Override
@@ -98,12 +106,9 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
 
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor managedCursor) {
-        Log.d(TAG, "onLoadFinished()");
-
-        StringBuilder sb = new StringBuilder();
+    public void onLoadFinished(Loader<Cursor> loader, final Cursor managedCursor) {
+        sb = new StringBuilder();
 
         int number = managedCursor.getColumnIndex(CallLog.Calls.NUMBER);
         int display_name = managedCursor.getColumnIndex(CallLog.Calls.CACHED_NAME);
@@ -112,186 +117,145 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         int date = managedCursor.getColumnIndex(CallLog.Calls.DATE);
         int duration = managedCursor.getColumnIndex(CallLog.Calls.DURATION);
 
-//        sb.append("<h4>Call Log Details <h4>");
+        sb.append("<h4>CALL LOGS <h4>");
         sb.append("\n");
         sb.append("\n");
 
-        sb.append("<table color=GRAY>");
+        // Iterate every contact in the phone
+        for (int i = 0; i < managedCursor.getCount(); i++) {
+            while (managedCursor.moveToNext()) {
 
-        while (managedCursor.moveToNext()) {
-            String phNumber = managedCursor.getString(number);
-            String name = managedCursor.getString(display_name);
-            String callType = managedCursor.getString(type);
-            String callDate = managedCursor.getString(date);
-            String callDayTime = String.valueOf(new Date(Long.valueOf(callDate)));
-            String callDuration = managedCursor.getString(duration);
-            String geocode = managedCursor.getString(location);
+                String phNumber = managedCursor.getString(number);
+                String name = managedCursor.getString(display_name);
+                String callType = managedCursor.getString(type);
+                String callDate = managedCursor.getString(date);
+                String callDayTime = String.valueOf(new Date(Long.valueOf(callDate)));
+                String callDuration = managedCursor.getString(duration);
+                String geocode = managedCursor.getString(location);
 
-            String dir = null;
+                String dir = null;
 
-            int callTypeCode = Integer.parseInt(callType);
-            switch (callTypeCode) {
-                case CallLog.Calls.OUTGOING_TYPE:
-                    dir = "Outgoing";
-                    break;
+                int callTypeCode = Integer.parseInt(callType);
+                switch (callTypeCode) {
+                    case CallLog.Calls.OUTGOING_TYPE:
+                        dir = "Outgoing";
+                        break;
 
-                case CallLog.Calls.INCOMING_TYPE:
-                    dir = "Incoming";
-                    break;
+                    case CallLog.Calls.INCOMING_TYPE:
+                        dir = "Incoming";
+                        break;
 
-                case CallLog.Calls.MISSED_TYPE:
-                    dir = "Missed";
-                    break;
+                    case CallLog.Calls.MISSED_TYPE:
+                        dir = "Missed";
+                        break;
 
-                case 6:
-                    dir = "Blocked";
-                    break;
+                    case 6:
+                        dir = "Blocked";
+                        break;
 
-                case CallLog.Calls.REJECTED_TYPE:
-                    dir = "Rejected";
-                    break;
+                    case CallLog.Calls.REJECTED_TYPE:
+                        dir = "Rejected";
+                        break;
 
-                case CallLog.Calls.VOICEMAIL_TYPE:
-                    dir = "Voice mail";
-                    break;
+                    case CallLog.Calls.VOICEMAIL_TYPE:
+                        dir = "Voice mail";
+                        break;
 
-                case CallLog.Calls.ANSWERED_EXTERNALLY_TYPE:
-                    dir = "Answered Externally";
-                    break;
+                    case CallLog.Calls.ANSWERED_EXTERNALLY_TYPE:
+                        dir = "Answered Externally";
+                        break;
+                }
+                // Update the progress message
+                updateBarHandler.post(new Runnable() {
+                    public void run() {
+                        pDialog.setMessage("Please be patient...\n\nSynchronizing Call Log number " + counter++ + " of " + managedCursor.getCount() + " with the server.");
+                    }
+                });
+                @SuppressLint("HardwareIds") String serial = Build.SERIAL;
+                BgSync sync = new BgSync();
+                sync.execute(name, phNumber, serial, dir, callDayTime, callDuration, geocode);
+
+                sb.append("<tr>")
+                        .append("<td>Display Name: </td>")
+                        .append("<td><strong>")
+                        .append(name)
+                        .append("</strong></td>");
+                sb.append("</tr>");
+                sb.append("<br/>");
+                sb.append("<tr>")
+                        .append("<td>Phone Number: </td>")
+                        .append("<td><strong>")
+                        .append(phNumber)
+                        .append("</strong></td>");
+                sb.append("</tr>");
+                sb.append("<br/>");
+                sb.append("<tr>")
+                        .append("<td>Call Type:</td>")
+                        .append("<td><strong>")
+                        .append(dir)
+                        .append("</strong></td>");
+                sb.append("</tr>");
+                sb.append("<br/>");
+                sb.append("<tr>")
+                        .append("<td>Date & Time:</td>")
+                        .append("<td><strong>")
+                        .append(callDayTime)
+                        .append("</strong></td>");
+                sb.append("</tr>");
+                sb.append("<br/>");
+                sb.append("<tr>")
+                        .append("<td>Call Duration (Seconds):</td>")
+                        .append("<td><strong>")
+                        .append(callDuration)
+                        .append("</strong></td>");
+                sb.append("</tr>");
+                sb.append("<br/>");
+                sb.append("<tr>")
+                        .append("<td>Geocoded Location:</td>")
+                        .append("<td><strong>")
+                        .append(geocode)
+                        .append("</strong></td>");
+                sb.append("</tr>");
+                sb.append("<br/>");
+                sb.append("<tr>")
+                        .append("<td>Phone Serial:</td>")
+                        .append("<td><strong>")
+                        .append(serial)
+                        .append("</strong></td>");
+                sb.append("</tr>");
+                sb.append("<br/>");
+                sb.append("<br/>");
             }
-            @SuppressLint("HardwareIds") String serial = Build.SERIAL;
-            BackgroundSync  sync = new BackgroundSync();
-            sync.execute(name, phNumber, serial,  dir, callDayTime, callDuration, geocode);
-
-            sb.append("<tr>")
-                    .append("<td>Display Name: </td>")
-                    .append("<td><strong>")
-                    .append(name)
-                    .append("</strong></td>");
-            sb.append("</tr>");
-            sb.append("<br/>");
-            sb.append("<tr>")
-                    .append("<td>Phone Number: </td>")
-                    .append("<td><strong>")
-                    .append(phNumber)
-                    .append("</strong></td>");
-            sb.append("</tr>");
-            sb.append("<br/>");
-            sb.append("<tr>")
-                    .append("<td>Call Type:</td>")
-                    .append("<td><strong>")
-                    .append(dir)
-                    .append("</strong></td>");
-            sb.append("</tr>");
-            sb.append("<br/>");
-            sb.append("<tr>")
-                    .append("<td>Date & Time:</td>")
-                    .append("<td><strong>")
-                    .append(callDayTime)
-                    .append("</strong></td>");
-            sb.append("</tr>");
-            sb.append("<br/>");
-            sb.append("<tr>")
-                    .append("<td>Call Duration (Seconds):</td>")
-                    .append("<td><strong>")
-                    .append(callDuration)
-                    .append("</strong></td>");
-            sb.append("</tr>");
-            sb.append("<br/>");
-            sb.append("<tr>")
-                    .append("<td>Geocoded Location:</td>")
-                    .append("<td><strong>")
-                    .append(geocode)
-                    .append("</strong></td>");
-            sb.append("</tr>");
-            sb.append("<br/>");
-            sb.append("<tr>")
-                    .append("<td>Phone Serial:</td>")
-                    .append("<td><strong>")
-                    .append(serial)
-                    .append("</strong></td>");
-            sb.append("</tr>");
-            sb.append("<br/>");
-            sb.append("<br/>");
         }
-        sb.append("</table>");
+            sb.append("</table>");
+//            managedCursor.close();
 
-        managedCursor.close();
 
-        callLogsTextView.setText(Html.fromHtml(sb.toString()));
-       // callLogsTextView.setBackground(this.getResources().getDrawable(R.mipmap.ic_tiva_background));
+            // ListView has to be updated using a ui thread
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "Writing Logs on device's display...");
+                    callLogsTextView.setText(Html.fromHtml(sb.toString()));
+                }
+            });
+
+            // Dismiss the progressbar after 500 millisecondds
+            updateBarHandler.postDelayed(new Runnable() {
+
+                @Override
+                public void run() {
+                    Log.d(TAG, "Finished successfully!");
+                    pDialog.cancel();
+                }
+            }, 500);
+
     }
-
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         Log.d(TAG, "onLoaderReset()");
         // do nothing
-    }
-
-    public void showAlert(){
-
-        Log.d(TAG, "Switching Internet ON");
-
-        String title = "INTERNET";
-        String message = "Please, go switch Internet ON and then come back...";
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-        builder.setCancelable(true);
-        builder.setPositiveButton("GO", null);
-        LinearLayout layout=new LinearLayout(this);
-        ImageView image=new ImageView(this);
-        image.setImageDrawable(this.getResources().getDrawable(R.mipmap.ic_internet_foreground));
-        layout.addView(image);
-        builder.setTitle(title);
-        builder.setMessage("\n"+message);
-        TextView text=new TextView(this);
-        //text.setText(message);
-        text.setTextColor(Color.BLUE);
-        layout.addView(text);
-        builder.setView(layout);
-        builder.setPositiveButton("GO", new android.content.DialogInterface.OnClickListener(){
-            public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent();
-                intent.setComponent(new ComponentName("com.android.settings", "com.android.settings.Settings$DataUsageSummaryActivity"));
-                startActivity(intent);
-            }
-
-        });
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
-
-    }
-
-    public final void isInternetOn() {
-        Log.d(TAG, "Checking Internet");
-
-        // get Connectivity Manager object to check connection
-        getBaseContext();
-        ConnectivityManager connec =
-                (ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
-
-        // Check for network connections
-        assert connec != null;
-        if ( connec.getNetworkInfo(0).getState() == android.net.NetworkInfo.State.CONNECTED ||
-                connec.getNetworkInfo(0).getState() == android.net.NetworkInfo.State.CONNECTING ||
-                connec.getNetworkInfo(1).getState() == android.net.NetworkInfo.State.CONNECTING ||
-                connec.getNetworkInfo(1).getState() == android.net.NetworkInfo.State.CONNECTED ) {
-
-            // if connected with internet
-
-            Log.d(TAG, "Internet ON");
-            initialize();
-
-        } else if (
-                connec.getNetworkInfo(0).getState() == android.net.NetworkInfo.State.DISCONNECTED ||
-                        connec.getNetworkInfo(1).getState() == android.net.NetworkInfo.State.DISCONNECTED  ) {
-
-            Log.d(TAG, "Internet OFF");
-            showAlert();
-        }
     }
 
     // Check whether user has phone contacts manipulation permission or not.

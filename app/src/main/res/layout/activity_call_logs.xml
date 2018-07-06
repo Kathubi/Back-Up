@@ -6,23 +6,10 @@
     android:background="@drawable/beach_sand"
     tools:context="com.codesndata.calllogs.MainActivity">
 
-
-    <Button
-        android:id="@+id/btn_call_log"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:background="@color/cardview_shadow_end_color"
-        android:shadowColor="@color/colorPrimary"
-        android:text="@string/click_to_load_call_logs"
-        android:textColor="@android:color/background_dark"
-        android:textSize="18sp" />
-
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/btn_call_log"
+        android:layout_margin="16dp"
         android:background="@color/cardview_shadow_end_color">
 
         <TextView

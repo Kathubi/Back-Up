@@ -1,15 +1,13 @@
 package com.codesndata.messages;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.pm.PackageManager;
+import android.app.ProgressDialog;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
+import android.os.Handler;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -21,35 +19,56 @@ import java.util.Date;
 
 public class MainActivity extends Activity {
     ListView lViewSMS;
+    private ProgressDialog pDialog;
+    private Handler updateBarHandler;
+    int counter;
+    Cursor cursor;
+    ArrayList<String> sms;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sms);
 
-        lViewSMS = findViewById(R.id.listView);
+        pDialog = new ProgressDialog(this);
+        pDialog.setTitle(" READING SMSs");
+        pDialog.setIcon(R.drawable.sms);
+        pDialog.setCancelable(true);
+        pDialog.show();
 
-        if(fetchSms()!=null)
-        {
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, fetchSms());
-            lViewSMS.setAdapter(adapter);
-        }
+        lViewSMS = findViewById(R.id.listView);
+        updateBarHandler = new Handler();
+
+        //Since reading all the SMSs takes some time, it's considered wise to run the task on
+        //its own independent thread
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                fetchSms();
+            }
+        }).start();
     }
 
-    public ArrayList<String> fetchSms()
+    public void fetchSms()
     {
-        ArrayList<String> sms = new ArrayList<>();
-
+        sms = new ArrayList<>();
         Uri uriSms = Uri.parse("content://sms/");
-        @SuppressLint("Recycle")
-        Cursor cursor = getContentResolver().query(uriSms, new String[]
-                {"_id", "address", "date", "body", "type", "read"},
+        cursor = getContentResolver().query(uriSms, new String[]
+                        {"_id", "address", "date", "body", "type", "read"},
                 null,null,null);
 
         assert cursor != null;
+        for (int i = 0; i < cursor.getCount(); i++) {
+            while (cursor.moveToNext()) {
 
-            for (int i = 0; i < cursor.getCount(); i++) {
-                while (cursor.moveToNext()) {
+                // Update the progress message
+                updateBarHandler.post(new Runnable() {
+                    public void run() {
+                        pDialog.setMessage("Please be patient...\n\nSynchronizing SMS number " + counter++ + " of " + cursor.getCount() + " with the server.");
+                    }
+                });
+
                 String id = cursor.getString(0);
                 String address = cursor.getString(1);
                 String smsDate = cursor.getString(2);
@@ -79,10 +98,28 @@ public class MainActivity extends Activity {
                 BgSync sync = new BgSync();
                 sync.execute(id, type, address, body, date, readState, serial);
 
-                sms.add("\nId : " + id + "\nType : " + type + "\nEntity : " + address + "\nSMS : " + body + "\nDate : " + date + "\nRead State : " + readState + "\n\n");
+                sms.add(":> Id :> " + id + "\nType :> " + type + "\nEntity :> " + address + "\nSMS :> " + body + "\nDate :> " + date + "\nRead State :> " + readState);
             }
+
+            // ListView has to be updated using a ui thread
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    ArrayAdapter adapter = new ArrayAdapter<>(getApplicationContext(), R.layout.list_item_sms, R.id.text1, sms);
+                    lViewSMS.setAdapter(adapter);
+                }
+            });
         }
-        return sms;
+
+        // Dismiss the progressbar after 500 millisecondds
+        updateBarHandler.postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                pDialog.cancel();
+            }
+        }, 500);
 
     }
 }
