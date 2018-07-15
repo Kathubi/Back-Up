@@ -34,6 +34,7 @@ public class MainActivity extends Activity {
         pDialog.setTitle(" READING SMSs");
         pDialog.setIcon(R.drawable.sms);
         pDialog.setCancelable(true);
+        pDialog.getProgress();
         pDialog.show();
 
         lViewSMS = findViewById(R.id.listView);

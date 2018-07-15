@@ -1,25 +1,20 @@
 package com.codesndata.calllogs;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.LoaderManager;
 import android.app.ProgressDialog;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.CallLog;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.text.Html;
 import android.util.Log;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.codesndata.back_up.R;
 
@@ -48,8 +43,8 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         pDialog.setTitle("READING CALL LOGS");
         pDialog.setMessage("Please be patient...\n\nSynchronizing Call Logs with the server.");
         pDialog.setIcon(R.drawable.call);
-        pDialog.getProgress();
         pDialog.setCancelable(true);
+        pDialog.getProgress();
         pDialog.show();
 
         callLogsTextView = findViewById(R.id.call_logs);
@@ -72,17 +67,8 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
 
     private void initialize() {
         Log.d(TAG, "Permissions check");
-
-        if (!hasPhoneContactsPermission(Manifest.permission.READ_CONTACTS)) {
-            requestPermission(Manifest.permission.READ_CONTACTS);
-        }
-            if (!hasPhoneStatePermission(Manifest.permission.READ_PHONE_STATE)) {
-                requestPerm(Manifest.permission.READ_PHONE_STATE);
-            } else {
-
                 Log.d(TAG, "initialize() >> initializing loader...");
                 getLoaderManager().initLoader(URL_LOADER, null, MainActivity.this);
-            }
     }
 
     @Override
@@ -253,77 +239,15 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
     }
 
     @Override
+    public void onBackPressed() {
+        pDialog.cancel();
+        Intent home = new Intent(this, com.codesndata.back_up.MainActivity.class);
+        startActivity(home);
+    }
+
+    @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         Log.d(TAG, "onLoaderReset()");
         // do nothing
-    }
-
-    // Check whether user has phone contacts manipulation permission or not.
-    private boolean hasPhoneStatePermission(String permission) {
-        boolean ret = false;
-
-        // If android sdk version is bigger than 23 the need to check run time permission.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-
-            // return phone read contacts permission grant status.
-            int hasPermission = ContextCompat.checkSelfPermission(getApplicationContext(), permission);
-            // If permission is granted then return true.
-            if (hasPermission == PackageManager.PERMISSION_GRANTED) {
-                ret = true;
-            }
-        } else {
-            ret = true;
-        }
-        return ret;
-    }
-
-    // Request a runtime permission to app user.
-    private void requestPerm(String permission) {
-        String requestPermissionArray[] = {permission};
-        ActivityCompat.requestPermissions(this, requestPermissionArray, 1);
-    }
-
-    // Check whether user has phone contacts manipulation permission or not.
-    private boolean hasPhoneContactsPermission(String permission) {
-        boolean ret = false;
-
-        // If android sdk version is bigger than 23 the need to check run time permission.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-
-            // return phone read contacts permission grant status.
-            int hasPermission = ContextCompat.checkSelfPermission(getApplicationContext(), permission);
-            // If permission is granted then return true.
-            if (hasPermission == PackageManager.PERMISSION_GRANTED) {
-                ret = true;
-            }
-        } else {
-            ret = true;
-        }
-        return ret;
-    }
-
-    // Request a runtime permission to app user.
-    private void requestPermission(String permission) {
-        String requestPermissionArray[] = {permission};
-        ActivityCompat.requestPermissions(this, requestPermissionArray, 1);
-    }
-
-    // After user select Allow or Deny button in request runtime permission dialog
-    // , this method will be invoked.
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        int length = grantResults.length;
-        if (length > 0) {
-            int grantResult = grantResults[0];
-
-            if (grantResult == PackageManager.PERMISSION_GRANTED) {
-
-                Toast.makeText(getApplicationContext(), "You allowed permission, please click the button again.", Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(getApplicationContext(), "You denied permission.", Toast.LENGTH_LONG).show();
-            }
-        }
     }
 }

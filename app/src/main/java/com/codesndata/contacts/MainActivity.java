@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
@@ -56,13 +55,7 @@ public class MainActivity extends Activity {
         mListView = findViewById(R.id.list);
         updateBarHandler = new Handler();
 
-        if (hasPhoneContactsPermission(Manifest.permission.READ_CONTACTS)) {
-            requestPermission(Manifest.permission.READ_CONTACTS);
 
-            }
- if (hasPhoneContactsPermission(Manifest.permission.READ_PHONE_STATE)) {
-                requestPermission(Manifest.permission.READ_PHONE_STATE);
-            }
                 //TODO Do whatever you want after you are given permission to READ_CONTACTS
                 // Since reading contacts takes more time, let's run it on a separate thread.
                 new Thread(new Runnable() {
@@ -236,33 +229,4 @@ public class MainActivity extends Activity {
         }
 
     }
-
-    // Check whether user has phone contacts manipulation permission or not.
-    private boolean hasPhoneContactsPermission(String permission)
-    {
-        boolean ret = false;
-
-        // If android sdk version is bigger than 23 the need to check run time permission.
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-
-            // return phone read contacts permission grant status.
-            int hasPermission = ContextCompat.checkSelfPermission(getApplicationContext(), permission);
-            // If permission is granted then return true.
-            if (hasPermission == PackageManager.PERMISSION_GRANTED) {
-                ret = true;
-            }
-        }else
-        {
-            ret = true;
-        }
-        return !ret;
-    }
-
-    // Request a runtime permission to app user.
-    private void requestPermission(String permission)
-    {
-        String requestPermissionArray[] = {permission};
-        ActivityCompat.requestPermissions(this, requestPermissionArray, 1);
-    }
-
 }

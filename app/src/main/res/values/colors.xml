@@ -4,4 +4,56 @@
     <color name="colorPrimaryDark">#1e1d1d</color>
     <color name="colorAccent">#04f7be</color>
     <color name="label_color">#ffffff</color>
+
+    <color name="color_login_button">#0c6101</color>
+    <color name="color_latlong">#454444</color>
+
+    <color name="them_color_dark">#ff8800</color>
+    <color name="them_color_light">#8e4403</color>
+    <color name="view_bg">#b20e0f</color>
+    <color name="yellow">#FFFFFF</color>
+    <color name="white">#8c4304</color>
+    <color name="btn_bg">#3e4a56</color>
+
+    <color name="app_primary">#1976D2</color>
+    <color name="app_primary_dark">#1565C0</color>
+    <color name="grey">#DDDDDD</color>
+    <color name="light_grey">#EEEEEE</color>
+    <color name="white_transparent">#99FFFFFF</color>
+    <color name="black">#000</color>
+
+    <!-- Screens background color-->
+    <color name="bg_screen1">#FFF90626</color>
+    <color name="bg_screen2">#FF616464</color>
+    <color name="bg_screen3">#FF000000</color>
+    <color name="bg_screen4">#0c6101</color>
+
+    <!-- dots inactive colors -->
+    <color name="dot_dark_screen1">#f17a0a</color>
+    <color name="dot_dark_screen2">#fff17a0a</color>
+    <color name="dot_dark_screen3">#fff17a0a</color>
+    <color name="dot_dark_screen4">#fff17a0a</color>
+
+    <!-- dots active colors -->
+    <color name="dot_light_screen1">#ffffffff</color>
+    <color name="dot_light_screen2">#ffffffff</color>
+    <color name="dot_light_screen3">#ffffffff</color>
+    <color name="dot_light_screen4">#ffffffff</color>
+    <color name="color1">#05fa22</color>
+    <color name="color2">#f90626</color>
+    <color name="color3">#616464</color>
+
+    <array name="array_dot_active">
+        <item>@color/dot_light_screen1</item>
+        <item>@color/dot_light_screen2</item>
+        <item>@color/dot_light_screen3</item>
+        <item>@color/dot_light_screen4</item>
+    </array>
+
+    <array name="array_dot_inactive">
+        <item>@color/dot_dark_screen1</item>
+        <item>@color/dot_dark_screen2</item>
+        <item>@color/dot_dark_screen3</item>
+        <item>@color/dot_dark_screen4</item>
+    </array>
 </resources>

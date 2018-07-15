@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_registration"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.codesndata.maps.RegistrationActivity"
+    android:background="@android:drawable/picture_frame">
+
+    <TextView
+        android:id="@+id/section_label"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true"
+        android:background="?android:attr/actionModeBackground"
+        android:foregroundGravity="top|center"
+        android:gravity="center"
+        android:text="@string/registration_details"
+        android:textColor="@color/color_login_button"
+        android:textStyle="bold" />
+
+    <ImageButton
+        android:id="@+id/imageButton"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_below="@+id/section_label"
+        android:layout_centerHorizontal="true"
+        android:contentDescription="@string/signup_image_logo"
+        android:fadingEdge="vertical"
+        app:srcCompat="@drawable/ic_pic_web" />
+
+    <!-- Registration progress -->
+
+    <ScrollView
+        android:id="@+id/registration_form"
+        android:layout_width="match_parent"
+        android:layout_height="370dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true">
+
+
+        <RelativeLayout
+            android:id="@+id/reg_form"
+            android:layout_width="match_parent"
+            android:layout_height="370dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textView8"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/textInputLayout"
+                android:layout_alignEnd="@+id/textView3"
+                android:layout_marginBottom="12dp"
+                android:text="@string/email_reg"
+                android:textColor="@android:color/black"
+                android:textSize="18sp" />
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/textInputLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="11dp"
+                android:layout_marginTop="27dp">
+
+                <AutoCompleteTextView
+                    android:id="@+id/email"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_above="@+id/secret_code"
+                    android:layout_marginBottom="11dp"
+                    android:ems="10"
+                    android:hint="@string/prompt_email"
+                    android:inputType="textEmailAddress"
+                    android:maxLines="1"
+                    android:singleLine="true" />
+
+            </android.support.design.widget.TextInputLayout>
+
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/name"
+                android:layout_alignParentStart="true"
+                android:text="@string/surname_reg"
+                android:textColor="@android:color/black"
+                android:textSize="18sp" />
+
+            <EditText
+                android:id="@+id/name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignStart="@+id/textInputLayout"
+                android:layout_below="@+id/textInputLayout"
+                android:layout_marginTop="15dp"
+                android:ems="10"
+                android:hint="@string/jane"
+                android:inputType="textPersonName"
+                tools:ignore="LabelFor,RelativeOverlap" />
+
+
+            <EditText
+                android:id="@+id/surname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignStart="@+id/name"
+                android:layout_below="@+id/name"
+                android:layout_marginTop="11dp"
+                android:ems="10"
+                android:hint="@string/doe"
+                android:inputType="textPersonName"
+                tools:ignore="LabelFor" />
+
+            <TextView
+                android:id="@+id/textView4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@+id/surname"
+                android:layout_alignParentStart="true"
+                android:text="@string/other_names_reg"
+                android:textColor="@android:color/black"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/textView9"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignStart="@+id/textView8"
+                android:layout_below="@+id/surname"
+                android:layout_marginTop="34dp"
+                android:text="@string/secret_pin"
+                android:textColor="@android:color/black"
+                android:textSize="18sp" />
+
+            <EditText
+                android:id="@+id/secret_code"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/textView9"
+                android:layout_alignBottom="@+id/textView9"
+                android:layout_alignStart="@+id/surname"
+                android:ems="10"
+                android:hint="@string/secret_code_hint"
+                android:inputType="numberPassword"
+                tools:ignore="LabelFor" />
+
+            <Button
+                android:id="@+id/submit_button"
+                style="?android:textAppearanceSmall"
+                android:layout_width="165dp"
+                android:layout_height="50dp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                android:background="?android:attr/actionModeBackground"
+                android:text="@string/submit_reg_button"
+                android:textColor="@color/color_login_button"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/cancel_button"
+                style="?android:textAppearanceSmall"
+                android:layout_width="165dp"
+                android:layout_height="50dp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentStart="true"
+                android:background="?android:attr/actionModeBackground"
+                android:text="@string/cancel_reg_button"
+                android:textColor="@color/color_login_button"
+                android:textStyle="bold" />
+
+        </RelativeLayout>
+    </ScrollView>
+
+
+</RelativeLayout>

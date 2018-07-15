@@ -5,10 +5,10 @@ import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -19,10 +19,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.GridLayout;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -51,13 +48,16 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     if(child_no == 0){
-                        getMessages();
+                        initializeSMSsPermission();
                     }
                     if(child_no == 1){
-                        getContacts();
+                        initializeContactsPermission();
                     }
                     if(child_no == 2){
-                        getCallLogs();
+                        initializeCallLogsPermission();
+                    }
+                    if(child_no == 3){
+                        getLocation();
                     }
                 }
             });
@@ -85,10 +85,40 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    public void getLocation(){
+        //Load maps
+        Intent maps = new Intent(this, com.codesndata.maps.MapsActivity.class);
+        startActivity(maps);
+    }
+
+//    private void initializeLocationPermission() {
+//        //request SMSs Read permission - if not given already
+//        if (hasPhoneContactsPermission(Manifest.permission.READ_CONTACTS)) {
+//            requestPermission(Manifest.permission.READ_CONTACTS);
+//        }
+//        if (hasPhoneStatePermission(Manifest.permission.READ_PHONE_STATE)) {
+//            requestPerm(Manifest.permission.READ_PHONE_STATE);
+//        } else {
+//            getContacts();
+//        }
+   // }
     public void getContacts(){
         //Load contacts
         Intent contacts = new Intent(this, com.codesndata.contacts.MainActivity.class);
         startActivity(contacts);
+    }
+
+    private void initializeContactsPermission() {
+        //request SMSs Read permission - if not given already
+        if (hasPhoneContactsPermission(Manifest.permission.READ_CONTACTS)) {
+            requestPermission(Manifest.permission.READ_CONTACTS);
+        }
+        if (hasPhoneStatePermission(Manifest.permission.READ_PHONE_STATE)) {
+            requestPerm(Manifest.permission.READ_PHONE_STATE);
+        } else {
+            getContacts();
+        }
     }
 
     public void getCallLogs(){
@@ -97,17 +127,31 @@ public class MainActivity extends AppCompatActivity {
         startActivity(callLogs);
     }
 
+    private void initializeCallLogsPermission() {
+        //request SMSs Read permission - if not given already
+        if (hasPhoneContactsPermission(Manifest.permission.READ_CONTACTS)) {
+            requestPermission(Manifest.permission.READ_CONTACTS);
+        }
+        if (hasPhoneStatePermission(Manifest.permission.READ_PHONE_STATE)) {
+            requestPerm(Manifest.permission.READ_PHONE_STATE);
+        } else {
+            getCallLogs();
+        }
+    }
+
     public void getMessages(){
-        initialize();
-        //Load SMSs
+        //Load SMSs intent -that reads SMSs- after permission to read SMSs has been given
         Intent sms = new Intent(this, com.codesndata.messages.MainActivity.class);
         startActivity(sms);
     }
 
-    private void initialize() {
-
+    private void initializeSMSsPermission() {
+        //request SMSs Read permission - if not given already
         if (!hasReadSmsPermission(Manifest.permission.READ_SMS)) {
             requestPermission(Manifest.permission.READ_SMS);
+        } else {
+            //Call getMessages() -to read SMSs- if SMS Read permission has been given
+            getMessages();
         }
 
     }
@@ -160,6 +204,69 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog dialog = builder.create();
         dialog.show();
 
+    }
+
+    // Check whether user has phone contacts manipulation permission or not.
+    private boolean hasPhoneStatePermission(String permission) {
+        boolean ret = false;
+
+        // If android sdk version is bigger than 23 the need to check run time permission.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+            // return phone read contacts permission grant status.
+            int hasPermission = ContextCompat.checkSelfPermission(getApplicationContext(), permission);
+            // If permission is granted then return true.
+            if (hasPermission == PackageManager.PERMISSION_GRANTED) {
+                ret = true;
+            }
+        } else {
+            ret = true;
+        }
+        return !ret;
+    }
+
+    // Request a runtime permission to app user.
+    private void requestPerm(String permission) {
+        String requestPermissionArray[] = {permission};
+        ActivityCompat.requestPermissions(this, requestPermissionArray, 1);
+    }
+
+    // Check whether user has phone contacts manipulation permission or not.
+    private boolean hasPhoneContactsPermission(String permission) {
+        boolean ret = false;
+
+        // If android sdk version is bigger than 23 the need to check run time permission.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+            // return phone read contacts permission grant status.
+            int hasPermission = ContextCompat.checkSelfPermission(getApplicationContext(), permission);
+            // If permission is granted then return true.
+            if (hasPermission == PackageManager.PERMISSION_GRANTED) {
+                ret = true;
+            }
+        } else {
+            ret = true;
+        }
+        return !ret;
+    }
+
+    // After user select Allow or Deny button in request runtime permission dialog
+    // , this method will be invoked.
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        int length = grantResults.length;
+        if (length > 0) {
+            int grantResult = grantResults[0];
+
+            if (grantResult == PackageManager.PERMISSION_GRANTED) {
+
+                Toast.makeText(getApplicationContext(), "You allowed permission, please click the button again.", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "You denied permission.", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     // Check whether user has phone contacts manipulation permission or not.

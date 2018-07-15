@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_maps"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="5dp"
+    android:paddingLeft="5dp"
+    android:paddingRight="5dp"
+    android:paddingTop="5dp"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.codesndata.maps.MapsActivity">
+
+    <fragment
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="450dp"
+        tools:context="ke.co.elitestech.mapmarker.MapsActivity" />
+
+    <ScrollView
+        android:id="@+id/phone_details_scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="110dp"
+        android:layout_marginTop="455dp"
+        android:background="@color/color_latlong">
+
+        <TextView
+            android:id="@+id/detailsPanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/color_latlong"
+            android:gravity="start"
+
+            android:padding="5dp"
+            android:textColor="@color/colorPrimary"
+            android:textSize="16sp" />
+
+    </ScrollView>
+
+</RelativeLayout>
